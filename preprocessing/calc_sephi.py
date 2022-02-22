@@ -24,6 +24,12 @@ import math as m
 #Zeng & Sasselov, PASP, 125, 925 (2013).
 def likelihood_telluric(planet_mass, planet_radius, verbose):
     
+    """
+    planet_mass: units?
+    planet_radius: units?
+    verbose: 
+    """
+    
     if(verbose):
         print("Composition")
     
@@ -119,6 +125,7 @@ def likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass, planet_semi
     c=np.array([[-1.33200E-11,-8.30800E-12,-3.19800E-12,-2.87400E-12,-8.96800E-12,-7.41800E-12]])
     d=np.array([[-3.09700E-15,-1.93100E-15,-5.57500E-16,-5.01100E-16,-2.08400E-15,-1.71300E-15]])
     
+    # TODO: What is this line doing? I do not need to convert to Kelvin. [SR] inputs are in K
     T_star_K = T_eff_star - 5780*u.K
     T_star = np.reshape(T_star_K.value, (1,T_star_K.size))
   
@@ -347,14 +354,24 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
 #Can be estimated with only seven physical characteristics: 
 #planetary mass, planetary radius, planetary orbital period, stellar mass, 
 #stellar radius, stellar effective temperature and planetary system age.
-def get_sephi_RM17(config, this_level, sfh, stellarpop, planetpop):
-    
-    #Determine likelihoods at 4 different stages
+#def get_sephi_RM17(config, this_level, sfh, stellarpop, planetpop):
+
+def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, planet_system_age):
+    # TODO: I haven't calculated pl_a
     verbose = False
-    likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
-    likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
-    likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
-    likelihood_4 = likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_system_age, planet_radius, planet_mass, verbose)
-    combined     = (likelihood_1 * likelihood_2 * likelihood_3 * likelihood_4)**(1./4.) # Determine SEPHI as geometric mean of the 4 different likelihoods
+    
+    # TODO: add a condition that returns nan if any of the inputs are nan
+    if np.isnan(planet_mass) or np.isnan(planet_radius) or np.isnan(planet_semi_major_axis) or np.isnan(T_eff_star) or np.isnan(L_star): #or np.isnan(planet_system age):
+        combined = np.nan
+        
+    else:
+        #Determine likelihoods at 4 different stages
+        # TODO: should I convert L?
+        # TODO: do I need to covert pl_rad?
+        likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
+        likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
+        likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
+        likelihood_4 = likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_system_age, planet_radius, planet_mass, verbose)
+        combined     = (likelihood_1 * likelihood_2 * likelihood_3 * likelihood_4)**(1./4.) # Determine SEPHI as geometric mean of the 4 different likelihoods
 
     return combined

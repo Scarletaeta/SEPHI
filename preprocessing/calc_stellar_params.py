@@ -6,7 +6,7 @@ from astropy.constants import sigma_sb, L_sun, R_sun
 sigma = sigma_sb.value
 
 # Calc. L from R and T
-def calc_st_lum(T,  dT1, dT2, R, dR1, dR2):
+def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
     """
     T = stellar effective temperature [K]
     dT1 = positive error
@@ -76,7 +76,8 @@ def calc_st_lum(T,  dT1, dT2, R, dR1, dR2):
 
     
     
-def calc_st_teff(R, dR1, dR2, log_L, dlog_L1, dlog_L2):
+# Calculate the stellar effective temperature from stelalr radius and luminosity:
+def calc_temp(R, dR1, dR2, log_L, dlog_L1, dlog_L2):
     """
     R = stellar radius [solar radius]
     dR1 = positive error
@@ -85,26 +86,24 @@ def calc_st_teff(R, dR1, dR2, log_L, dlog_L1, dlog_L2):
     dlog_L1 = positive error
     dlog_L2 = negative error
     
-    returns stellar effective temperature, positive error, negative error
+    returns stellar effective temperature, positive error, percent err, negative error, percent err
     """
+    
+    sigma = sigma_sb.value
     
     # Calculate T if R and L /= NaN
     if np.isfinite(R) and np.isfinite(log_L):
         
         # Convert R, dR1 and dR2 to meters:
-        R = R * R_sun.value
-        #dR1 = dR1 * R_sun.value
-        #dR2 = dR2 * R_sun.value 
+        R = R * R_sun.value # [m]
     
         # Convert log_L, dlog_L1 and dlog_L2 to W:
         L = 10**log_L * L_sun.value # [W]
-        #dL1 = 10**log_L * np.log(10) * dlog_L1 * L_sun.value
-        #dL2 = 10**log_L * np.log(10) * dlog_L2 * L_sun.value
         
         #T = (2*R)**(-2) * ( L / (pi*sigma) )**(0.25)
-        T = (4*pi*sigma)**(-0.25) * L**(0.25) * R*(-0.5)
+        T = (4*pi*sigma)**(-0.25) * L**(0.25) * R**(-0.5)
         
-        # TODO: calculate negative and positive errors in T if errors in R and dlog_L are available:
+        # Calculate negative and positive errors in T if errors in R and dlog_L are available:
         if np.isfinite(dR1) and np.isfinite(dlog_L1):
             # Convert dR1 to W:
             dR1 = dR1 * R_sun.value
