@@ -25,8 +25,8 @@ import math as m
 def likelihood_telluric(planet_mass, planet_radius, verbose):
     
     """
-    planet_mass: units?
-    planet_radius: units?
+    planet_mass: units are converted to Earth masses
+    planet_radius: units are converted to Earth radii
     verbose: 
     """
     
@@ -41,7 +41,7 @@ def likelihood_telluric(planet_mass, planet_radius, verbose):
     # Determining radius of a 50% MgSiO3, 50% H2O planet of the same mass
     # Using result of 3rd-order polynomial fit to Table 1 in Zeng & Sasselov 2013
     log10_MgSiO3_H2O_radius = np.poly1d( np.array([-0.00637393, -0.01837899,  0.28980072,  0.10391018]))
-    MgSiO3_H2O_radius = 10.**(log10_MgSiO3_H2O_radius(planet_mass.to(u.Mearth).value))
+    MgSiO3_H2O_radius = 10.**(log10_MgSiO3_H2O_radius(planet_mass.to(u.Mearth).value)) # converted to Earth masses
 
     sigma = (MgSiO3_H2O_radius - MgSiO3_radius) / 3.0
     
@@ -53,10 +53,12 @@ def likelihood_telluric(planet_mass, planet_radius, verbose):
                                   planet_radius.to(u.Rearth).value <= MgSiO3_H2O_radius) ) #condition 2
     
     likelihood = np.zeros(planet_mass.size)  #initialising with zero likelihood   
-    if(c1[0].size>0):
+    if(c1[0].size>0): # TODO: neither of these conditions are being met/running
         likelihood[c1] = 1.0
+        print("blah")
     if(c2[0].size>0):
         likelihood[c2] = np.exp( -0.5 * ( (planet_radius.to(u.Rearth).value[c2] - MgSiO3_radius[c2])/sigma[c2] )**2 )
+        print("boo")
     
     if(verbose):
         print("Sim 1: (Telluric planet) = ", likelihood, "\n")
@@ -77,13 +79,17 @@ def likelihood_atmosphere(planet_mass, planet_radius, verbose):
         
     # calculating likelihood    
     c1 = np.where(v_e.value < 1.0)  #condition 1
+    print(c1)
     c2 = np.where(v_e.value >= 1.0) #condition 2
+    print(c2)
 
     likelihood = np.zeros(planet_mass.size)  #initialising with zero likelihood  
+    print(likelihood)
+    #print(likelihood.type)
     if(c1[0].size>0):
         likelihood[c1] = np.exp(-0.5*(3.*(v_e.value[c1]-1.))**2)
     if(c2[0].size>0):
-        likelihood[c2] = np.exp(-0.5*(3.*(v_e.value[c2]-1.)/7.66)**2)
+        likelihood[c2] = np.exp(-0.5*(3.*(v_e.value[c2]-1.)/7.66)**2) # TODO: stopping at this line. Index to scalar
     
     if(verbose):
         print("Sim 2: (Atmosphere) = ", likelihood, "\n")
@@ -125,7 +131,7 @@ def likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass, planet_semi
     c=np.array([[-1.33200E-11,-8.30800E-12,-3.19800E-12,-2.87400E-12,-8.96800E-12,-7.41800E-12]])
     d=np.array([[-3.09700E-15,-1.93100E-15,-5.57500E-16,-5.01100E-16,-2.08400E-15,-1.71300E-15]])
     
-    # TODO: What is this line doing? I do not need to convert to Kelvin. [SR] inputs are in K
+    # From Kopparapu. 5780K is the surface temp for sun They see how much cooler or hotter than the sun the star is
     T_star_K = T_eff_star - 5780*u.K
     T_star = np.reshape(T_star_K.value, (1,T_star_K.size))
   
@@ -357,8 +363,13 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
 #def get_sephi_RM17(config, this_level, sfh, stellarpop, planetpop):
 
 def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, planet_system_age):
-    # TODO: I haven't calculated pl_a
-    verbose = False
+    """
+    planet_mass: array of planet masses
+    planet_radius: array of planet radii
+    etc
+    """
+    
+    verbose = True
     
     # TODO: add a condition that returns nan if any of the inputs are nan
     if np.isnan(planet_mass) or np.isnan(planet_radius) or np.isnan(planet_semi_major_axis) or np.isnan(T_eff_star) or np.isnan(L_star): #or np.isnan(planet_system age):
@@ -366,8 +377,6 @@ def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_sta
         
     else:
         #Determine likelihoods at 4 different stages
-        # TODO: should I convert L?
-        # TODO: do I need to covert pl_rad?
         likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
         likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
         likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
