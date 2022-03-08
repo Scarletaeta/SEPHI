@@ -362,7 +362,7 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
 #stellar radius, stellar effective temperature and planetary system age.
 #def get_sephi_RM17(config, this_level, sfh, stellarpop, planetpop):
 
-def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, planet_system_age):
+def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, stellar_mass, planet_system_age):
     """
     planet_mass: array of planet masses
     planet_radius: array of planet radii
@@ -372,15 +372,15 @@ def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_sta
     verbose = True
     
     # TODO: add a condition that returns nan if any of the inputs are nan
-    if np.isnan(planet_mass) or np.isnan(planet_radius) or np.isnan(planet_semi_major_axis) or np.isnan(T_eff_star) or np.isnan(L_star): #or np.isnan(planet_system age):
-        combined = np.nan
+    #if np.isnan(planet_mass) or np.isnan(planet_radius) or np.isnan(planet_semi_major_axis) or np.isnan(T_eff_star) or np.isnan(L_star): #or np.isnan(planet_system age):
+        #combined = np.nan
         
-    else:
-        #Determine likelihoods at 4 different stages
-        likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
-        likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
-        likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
-        likelihood_4 = likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_system_age, planet_radius, planet_mass, verbose)
-        combined     = (likelihood_1 * likelihood_2 * likelihood_3 * likelihood_4)**(1./4.) # Determine SEPHI as geometric mean of the 4 different likelihoods
+    #else:
+    #Determine likelihoods at 4 different stages
+    likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
+    likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
+    likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
+    likelihood_4 = likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_system_age, planet_radius, planet_mass, verbose)
+    combined     = (likelihood_1 * likelihood_2 * likelihood_3 * likelihood_4)**(1./4.) # Determine SEPHI as geometric mean of the 4 different likelihoods
 
     return combined
