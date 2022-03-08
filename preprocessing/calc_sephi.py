@@ -37,6 +37,7 @@ def likelihood_telluric(planet_mass, planet_radius, verbose):
     # Using result of 3rd-order polynomial fit to Table 1 in Zeng & Sasselov 2013
     log10_MgSiO3_radius = np.poly1d( np.array([-0.0066252 , -0.02274424,  0.30285182,  0.02052977]))
     MgSiO3_radius = 10.**(log10_MgSiO3_radius(planet_mass.to(u.Mearth).value))
+    #print("MgSi03 radius: ", MgSiO3_radius)
    
     # Determining radius of a 50% MgSiO3, 50% H2O planet of the same mass
     # Using result of 3rd-order polynomial fit to Table 1 in Zeng & Sasselov 2013
@@ -53,12 +54,12 @@ def likelihood_telluric(planet_mass, planet_radius, verbose):
                                   planet_radius.to(u.Rearth).value <= MgSiO3_H2O_radius) ) #condition 2
     
     likelihood = np.zeros(planet_mass.size)  #initialising with zero likelihood   
-    if(c1[0].size>0): # TODO: neither of these conditions are being met/running
+    if(c1[0].size>0):
         likelihood[c1] = 1.0
-        print("blah")
+        #print("c1: ", c1)
     if(c2[0].size>0):
         likelihood[c2] = np.exp( -0.5 * ( (planet_radius.to(u.Rearth).value[c2] - MgSiO3_radius[c2])/sigma[c2] )**2 )
-        print("boo")
+        #print("c2: ", c2)
     
     if(verbose):
         print("Sim 1: (Telluric planet) = ", likelihood, "\n")
@@ -79,13 +80,12 @@ def likelihood_atmosphere(planet_mass, planet_radius, verbose):
         
     # calculating likelihood    
     c1 = np.where(v_e.value < 1.0)  #condition 1
-    print(c1)
+    #print("c1: ", c1)
     c2 = np.where(v_e.value >= 1.0) #condition 2
-    print(c2)
+    #print("c2: ", c2)
 
     likelihood = np.zeros(planet_mass.size)  #initialising with zero likelihood  
-    print(likelihood)
-    #print(likelihood.type)
+    #print(likelihood)
     if(c1[0].size>0):
         likelihood[c1] = np.exp(-0.5*(3.*(v_e.value[c1]-1.))**2)
     if(c2[0].size>0):
@@ -249,6 +249,7 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
                  * (omega_initial - omega_final) \
                  * (planet_mass.to(u.kg)/stellar_mass.to(u.kg))**2 \
                  * (planet_semi_major_axis.to(u.m)/planet_radius.to(u.m))**6
+    #print("tau_synch: ", tau_synch)
     
     #Next step: determining whether to use Earth-like, or "other" (super-Earth/Ocean) tidal dissipation factor
     c1 = np.where(  np.logical_and(planet_mass.to(u.kg) < 2.0 * const.M_earth, planet_radius.to(u.m) < 1.5 * const.R_earth))
@@ -266,7 +267,9 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
     #terrestrial-like, ice giant and gas giant planets.
     
     # Determining conditions if planets tidally locked and density ranges wrt solar system planets
-    tidally_locked     = tau_synch.to(u.Gyr) < planet_system_age.to(u.Gyr)
+    #print("tau_synch2: ", tau_synch)
+    #print("planet_system_age2 :", planet_system_age)
+    tidally_locked     = tau_synch.to(u.Gyr) < planet_system_age.to(u.Gyr) #TODO: here is is trying to convert planet_system_age from solMass to Gyr
     earth_like_density = planet_density_ratio_Earth >= 1.0
     ice_giant_density  = np.logical_and(planet_density_ratio_Earth < 1.0, planet_density_ratio_Earth > 0.18)
     neptune_density    = np.logical_and(planet_density_ratio_Earth <=0.18, planet_density_ratio_Earth >0.16) 
@@ -361,26 +364,58 @@ def likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_syst
 #planetary mass, planetary radius, planetary orbital period, stellar mass, 
 #stellar radius, stellar effective temperature and planetary system age.
 #def get_sephi_RM17(config, this_level, sfh, stellarpop, planetpop):
-
-def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, stellar_mass, planet_system_age):
+def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_star, L_star, stellar_mass, planet_system_age, verbose=False):
     """
-    planet_mass: array of planet masses
-    planet_radius: array of planet radii
-    etc
+    The inputs should be the already collated 'best' values'
+    planet_mass: array of planet masses. Any units, with units included in array
+    planet_radius: array of planet radii. Any units, with units included in array
+    planet_semi_major_axis: array, any distance units
+    T_eff_star: array, any temp units
+    L_star: array, any units
+    stelalr_mass: array, any mass units
+    
+    NB: this function assumes that the arrays are the same length and that indicies correspond to prioperties of the same planet
     """
     
-    verbose = True
+    # Condition 1: stores the indicies where at least one of the necessary planet/stellar properties is NaN
+    # TODO: wheck whether this works with multiple NaN properties
+    c1 = np.where(np.isnan(planet_mass.value) | np.isnan(planet_radius.value) | np.isnan(planet_semi_major_axis.value) | np.isnan(T_eff_star.value) | np.isnan(L_star.value) | np.isnan(planet_system_age.value) )
+    #print("c1: ", c1)
     
-    # TODO: add a condition that returns nan if any of the inputs are nan
-    #if np.isnan(planet_mass) or np.isnan(planet_radius) or np.isnan(planet_semi_major_axis) or np.isnan(T_eff_star) or np.isnan(L_star): #or np.isnan(planet_system age):
-        #combined = np.nan
+    # Condition 2: stores the indicies where all planet/stellar properties are available
+    c2 = np.where(np.isfinite(planet_mass.value) & np.isfinite(planet_radius.value) & np.isfinite(planet_semi_major_axis.value) & np.isfinite(T_eff_star.value) & np.isfinite(L_star.value) & np.isfinite(planet_system_age.value) )
+    #print("c2: ", c2)
+    
+    # Empty arrays to store each likelihood:
+    likelihood_1 = np.zeros(planet_mass.size) # Empty array to store likelihood telluric
+    #print("Likelihood 1 shape: ", likelihood_1.shape)
+    #print("Likelihood 1: ", likelihood_1)
+    likelihood_2 = np.zeros(planet_mass.size) # Empty array to store likelihood atmosphere
+    likelihood_3 = np.zeros(planet_mass.size) # Empty array to store likelihood surface liquid water
+    likelihood_4 = np.zeros(planet_mass.size) # Empty array to store likelihood magnetic moment
+    
+    # Empty array to store the combined likelihoods (SEPHIs):
+    combined = np.zeros(planet_mass.size) 
+    
+    # If there is at least one NaN value, then the likelihoods and combined likelihood is NaN; SEPHI cannot be calculated when parameters are missing:
+    if(c1[0].size>0):
+        likelihood_1[c1] = np.nan
+        likelihood_2[c1] = np.nan
+        likelihood_3[c1] = np.nan
+        likelihood_4[c1] = np.nan
+        combined[c1] = np.nan
         
-    #else:
-    #Determine likelihoods at 4 different stages
-    likelihood_1 = likelihood_telluric(planet_mass, planet_radius, verbose)
-    likelihood_2 = likelihood_atmosphere(planet_mass, planet_radius, verbose)
-    likelihood_3 = likelihood_surface_liquid_water(T_eff_star, L_star, planet_mass,  planet_semi_major_axis, verbose)
-    likelihood_4 = likelihood_magnetic_moment(stellar_mass, planet_semi_major_axis, planet_system_age, planet_radius, planet_mass, verbose)
-    combined     = (likelihood_1 * likelihood_2 * likelihood_3 * likelihood_4)**(1./4.) # Determine SEPHI as geometric mean of the 4 different likelihoods
+    # If there is at least one planet with all planetary/stellar parameters available, calculate each likelihood and the combined likelihood (SEPHI):
+    if(c2[0].size>0):
+        #Determine likelihoods at 4 different stages:
+        likelihood_1[c2] = likelihood_telluric(planet_mass[c2], planet_radius[c2], verbose)
+        likelihood_2[c2] = likelihood_atmosphere(planet_mass[c2], planet_radius[c2], verbose)
+        likelihood_3[c2] = likelihood_surface_liquid_water(T_eff_star[c2], L_star[c2], planet_mass[c2],  planet_semi_major_axis[c2], verbose)
+        likelihood_4[c2] = likelihood_magnetic_moment(stellar_mass[c2], planet_semi_major_axis[c2], planet_system_age[c2], planet_radius[c2], planet_mass[c2], verbose)
+        # Determine SEPHI as geometric mean of the 4 different likelihoods:
+        combined[c2] = (likelihood_1[c2] * likelihood_2[c2] * likelihood_3[c2] * likelihood_4[c2])**(1./4.) 
 
+    if(verbose):
+        print("Combined likelihood: = ", combined, "\n" )
+        
     return combined
