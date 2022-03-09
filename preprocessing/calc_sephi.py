@@ -381,10 +381,12 @@ def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_sta
     # TODO: wheck whether this works with multiple NaN properties
     c1 = np.where(np.isnan(planet_mass.value) | np.isnan(planet_radius.value) | np.isnan(planet_semi_major_axis.value) | np.isnan(T_eff_star.value) | np.isnan(L_star.value) | np.isnan(planet_system_age.value) )
     #print("c1: ", c1)
+    print("Number of planets for which SEPHI cannot be calculated: ", c1[0].size)
     
     # Condition 2: stores the indicies where all planet/stellar properties are available
     c2 = np.where(np.isfinite(planet_mass.value) & np.isfinite(planet_radius.value) & np.isfinite(planet_semi_major_axis.value) & np.isfinite(T_eff_star.value) & np.isfinite(L_star.value) & np.isfinite(planet_system_age.value) )
     #print("c2: ", c2)
+    print("Number of planets for which SEPHI can be calculated: ", c2[0].size)
     
     # Empty arrays to store each likelihood:
     likelihood_1 = np.zeros(planet_mass.size) # Empty array to store likelihood telluric
