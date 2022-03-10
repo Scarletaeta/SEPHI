@@ -23,14 +23,14 @@ def classify_err(og_value, og_err1, og_err2, calc_err1, calc_err2): #calc_value,
     # If both positive and negative errors are available for both the original and calculated errors:
     if( pd.notna(og_err1) and pd.notna(og_err2) and pd.notna(calc_err1) and pd.notna(calc_err2) ):
         # Calculate the percentage errors in og_err:
-        percent_err1 = og_err1 / og_value * 100
-        percent_err2 = (-1) * og_err2 / og_value * 100
+        percent_err1 = abs( og_err1 / og_value * 100 ) #og value can be -ve or +ve
+        percent_err2 = abs( og_err2 / og_value * 100 )
         
         # The mean percentage error on the original value:
-        og_combined = ( percent_err1 + percent_err2 ) / 2
+        og_combined = ( percent_err1 + abs(percent_err2) ) / 2
         
         # The mean percentage error on the calculated value:
-        calc_combined = ( calc_err1 + calc_err2 ) / 2
+        calc_combined = ( calc_err1 + abs(calc_err2) ) / 2
         
         # Compare the mean percentage errors and assign a classification accorsing to which is smallest:
         if og_combined == calc_combined:

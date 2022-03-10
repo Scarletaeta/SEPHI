@@ -37,7 +37,7 @@ def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
             dL1 = 4*pi*sigma_sb.value * sqrt( (2*R*T**4*dR1)**2 + (R**2*4*T**3*dT1)**2 ) # in W
             dL1_solar = dL1 / (L_sun.value) # in Solar Lum
             dlog_L1 = dL1_solar / ( L_solar*np.log(10) ) # in log(Solar). np.log() is ln()
-            percent_err1 = dlog_L1 / log_L * 100
+            percent_err1 = abs(dlog_L1 / log_L) * 100 #log_L can be +/-ve
             
         # If both dT1 and dR1 are not available, we can't calc dL1_solar:
         else:
@@ -50,7 +50,7 @@ def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
             dL2 = (-1) * 4*pi*sigma_sb.value * sqrt( (2*R*T**4*dR2)**2 + (R**2*4*T**3*dT2)**2 ) # in W
             dL2_solar = dL2 / (L_sun.value) # in Solar Lum
             dlog_L2 = dL2_solar / ( L_solar*np.log(10) ) # in log(Solar)
-            percent_err2 = np.absolute(dlog_L2 / log_L) * 100
+            percent_err2 = abs(dlog_L2 / log_L) * 100 #log_L can be +/-ve
         
         # If both dT1 and dR1 are not available, we can't calc dL1_solar:
         else:
@@ -126,8 +126,9 @@ def calc_temp(R, dR1, dR2, log_L, dlog_L1, dlog_L2):
             dL2 = 10**log_L * np.log(10) * dlog_L2 * L_sun.value
             
             # Calc dT2:
-            dT2 = 0.5*(4*pi*sigma)**(-0.25) * sqrt( ( 0.5*L**(-0.75)*dL2 / sqrt(R) )**2 + ( L**(-0.25)*R**(-1.5)*dR2 )**2 )
-            percent_err2 = dT2 / T * 100
+            dT2 = (-1) * 0.5*(4*pi*sigma)**(-0.25) * sqrt( ( 0.5*L**(-0.75)*dL2 / sqrt(R) )**2 + ( L**(-0.25)*R**(-1.5)*dR2 )**2 ) # Mmultiply by (-1), otherwise dT2 would be +ve
+            percent_err2 = abs(dT2 / T) * 100
+            
             
         # If dR2 and dlog_L2 aren't both avaiable, we can't calc dT2:
         else:
