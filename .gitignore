@@ -2,5 +2,11 @@
 __pycache__/
 __pycache__/
 data/
+<<<<<<< HEAD
 preprocessing/dr3_download.py
 preprocessing/dr2_download.py
+=======
+preprocessing/dr2_download.py
+preprocessing/dr3_download.py
+.gitignore
+>>>>>>> d5cf8fee4a7ad9baa74ee58f0045bec7eeedfdf3
