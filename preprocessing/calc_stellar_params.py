@@ -17,15 +17,16 @@ def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
     returns log(stellar luminosity) [log(solar)], positive error, percentage error, negative error, percentage error
     """
     
-    #sigma = sigma_sb.value
-    
+    dR1 = dR1 * R_sun.value
+    dR2 = dR2 * R_sun.value 
+
     # Calculate L if T and R =/ NaN:
     if np.isfinite(T) and np.isfinite(R):
         
         # Convert R, dR1 and dR2 to meters:
         R = R * R_sun.value
-        dR1 = dR1 * R_sun.value
-        dR2 = dR2 * R_sun.value 
+        #dR1 = dR1 * R_sun.value # These didn't work when they were here
+        #dR2 = dR2 * R_sun.value 
         
         L = 4 * pi * sigma * R**2 * T**4 # in W
         L_solar = L / L_sun.value # in Solar Luminosities
@@ -34,8 +35,9 @@ def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
         # Calculate positive and negative errors in L if T and R have uncs.
         # Faster than calcing dlog_L for every value just to get NaN?
         if np.isfinite(dT1) and np.isfinite(dR1):
-            dL1 = 4*pi*sigma_sb.value * sqrt( (2*R*T**4*dR1)**2 + (R**2*4*T**3*dT1)**2 ) # in W
+            dL1 = 4*pi*sigma * sqrt( (2*R*T**4*dR1)**2 + (R**2*4*T**3*dT1)**2 ) # in W
             dL1_solar = dL1 / (L_sun.value) # in Solar Lum
+            # TODO: whya re these uncertainties coming out so big??
             dlog_L1 = dL1_solar / ( L_solar*np.log(10) ) # in log(Solar). np.log() is ln()
             percent_err1 = abs(dlog_L1 / log_L) * 100 #log_L can be +/-ve
             
@@ -71,8 +73,9 @@ def calc_luminosity(T,  dT1, dT2, R, dR1, dR2):
         percent_err1 = np.nan
         percent_err2 = np.nan
     
-    return log_L, dlog_L1, percent_err1, dlog_L2, percent_err2
-    #return L_solar, dL1_solar, dL2_solar, log_L, dlog_L1, dlog_L2
+    #return log_L, dlog_L1, percent_err1, dlog_L2, percent_err2
+    return L_solar, dL1_solar, dL2_solar
+#, log_L, dlog_L1, dlog_L2
 
     
     
@@ -142,6 +145,5 @@ def calc_temp(R, dR1, dR2, log_L, dlog_L1, dlog_L2):
         dT2 = np.nan
         percent_err1 = np.nan
         percent_err2 = np.nan
-    
     
     return T, dT1, percent_err1, dT2, percent_err2

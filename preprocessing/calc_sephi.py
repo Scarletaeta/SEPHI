@@ -416,7 +416,11 @@ def get_sephi_RM17(planet_mass, planet_radius, planet_semi_major_axis, T_eff_sta
         likelihood_4[c2] = likelihood_magnetic_moment(stellar_mass[c2], planet_semi_major_axis[c2], planet_system_age[c2], planet_radius[c2], planet_mass[c2], verbose)
         # Determine SEPHI as geometric mean of the 4 different likelihoods:
         combined[c2] = (likelihood_1[c2] * likelihood_2[c2] * likelihood_3[c2] * likelihood_4[c2])**(1./4.) 
-
+    
+    # Condition 3: stores the indicies where SEPHI is not NaN and does not equal 0:
+    c3 = np.where( (combined != 0) & np.isfinite(combined) )
+    print("The number of planets with non NaN, non-zero SEPHI: ", c3[0].size)
+    
     if(verbose):
         print("Combined likelihood: = ", combined, "\n" )
         
