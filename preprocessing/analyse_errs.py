@@ -1,56 +1,31 @@
 import numpy as np
-import pandas as pd
 
-# TODO: consider only recording mean % unc in data frame / calcing % errors in the function only
-
-# A function for error classification
-def classify_err(og_value, og_err1, og_err2, calc_err1, calc_err2): #calc_value, 
+def calc_percent_errs(values, errs):
     """
-    og_value: the original stellar parameter value [any units]
-    og_err1: the original positive error (on the given values) [any units]
-    og_err2: the original negative error (on the given values) [any units]
-    calc_value: [TODO: calc % errors here instead?] [any units]
-    calc_err1: the calculated (new) positive error (on the calculated values) [%]
-    calc_err2: the calculated (new) negative error (on the calculated values) [%]
+    values = values array/df
+    err = errors array/df
     
-    Returns a classification according to the value with the best (lowest) errors:
-    - 0 (equal)
-    - 1 (st_lum_combined is 'best')
-    - 2 (calc_L_combined is 'best')
-    - 3 (no classification, neither have both +ve and -ve errors avaiable)
+    returns percent_errs = df of percentage errors
     """
     
-    # If both positive and negative errors are available for both the original and calculated errors:
-    if( pd.notna(og_err1) and pd.notna(og_err2) and pd.notna(calc_err1) and pd.notna(calc_err2) ):
-        # Calculate the percentage errors in og_err:
-        percent_err1 = abs( og_err1 / og_value * 100 ) #og value can be -ve or +ve
-        percent_err2 = abs( og_err2 / og_value * 100 )
-        
-        # The mean percentage error on the original value:
-        og_combined = ( percent_err1 + abs(percent_err2) ) / 2
-        
-        # The mean percentage error on the calculated value:
-        calc_combined = ( calc_err1 + abs(calc_err2) ) / 2
-        
-        # Compare the mean percentage errors and assign a classification accorsing to which is smallest:
-        if og_combined == calc_combined:
-            classification = 0
-        elif og_combined < calc_combined:
-            classification = 1
-        else: #calc_combined < og_combined:
-            classification = 2
-            
-    # If the error is available on og_value but not on calc_value, count og_value as the 'better' one:
-    elif( pd.notna(og_err1) and pd.notna(og_err2) and pd.isna(calc_err1) and pd.isna(calc_err2) ):
-        classification = 1
+    values.to_numpy()
+    errs.to_numpy()
     
-     # If the error is available on calc_value and but not on og_value, count calc_value as the 'better' one:
-    elif( pd.isna(og_err1) and pd.isna(og_err2) and pd.notna(calc_err1) and pd.notna(calc_err2) ):
-        classification = 2
+    percent_errs =  np.absolute( np.multiply(errs, values**(-1)) ) * 100
+    return percent_errs.to_numpy()
+
+def combined_percent_errs(values, errs1, errs2):
+    """
+    values = values array/df
+    errs1 = +ve errors array/df
+    errs2 = -ve errors array/df
     
-    # If neither og_value nor calc_value have both positive and negative errors, then they get no classification (3):
-    else:
-        classification = 3
-        
-        
-    return classification
+    returns a df of mean percentage errors
+    """
+    
+    #values.to_numpy() These get converted to numpy in the percent_err function above
+    #errs1.to_numpy()
+    #errs2.to_numpy()
+    
+    means = ( calc_percent_errs(values, errs1) + calc_percent_errs(values, errs2) ) / 2
+    return means
