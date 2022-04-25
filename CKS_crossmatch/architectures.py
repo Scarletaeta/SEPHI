@@ -30,7 +30,7 @@ calc_model = 1
 
 # READ
 
-data = pd.read_csv('../data/planetdata.csv')
+data = pd.read_csv('planetdata_200806.csv') #[SR] changed file location
 star_labels = ['hostnames', 'fst_mass','fst_masserr1','fst_masserr2','fst_age','fst_ageerr1','fst_ageerr2','fst_met','fst_meterr1','fst_meterr2','fst_dist','fst_disterr1','fst_disterr2']
 planet_labels = ['fpl_letter','fpl_bmasse','fpl_bmasseerr1','fpl_bmasseerr2','fpl_smax','fpl_smaxerr1','fpl_smaxerr2','fpl_orbper','fpl_orbpererr1','fpl_orbpererr2',
                  'fpl_eccen','fpl_eccenerr1','fpl_eccenerr2','fpl_rade','fpl_radeerr1','fpl_radeerr2','fpl_dens','fpl_denserr1','fpl_denserr2']
@@ -182,8 +182,8 @@ meterr = np.nanmean(0.5*(stars['fst_meterr1'][samp]+stars['fst_meterr2'][samp]))
 ageerr = np.nanmean(0.5*(stars['fst_ageerr1'][samp]+stars['fst_ageerr2'][samp]))
 disterr = np.nanmean(0.5*(stars['fst_disterr1'][samp]+stars['fst_disterr2'][samp]))
 print(masserr, meterr, ageerr, disterr)
-
-rosetta = pd.read_csv('../data/KOI-Kepler.csv')
+###########The relevant bits are lines 186-216 and 242-254.
+rosetta = pd.read_csv('KOI-Kepler.csv') #[SR] changed file location
 for i in range(len(rosetta)):
     rosetta['Name'][i] = np.char.split(rosetta['Name'].values.astype('str'))[i][0]
     rosetta['KOI'][i] = rosetta['KOI'][i][:-3]
@@ -202,7 +202,7 @@ for i in range(len(multiple_high)):
         multiple_high_KOI = np.append(multiple_high_KOI, rosetta['KOI'].values[np.where(rosetta['Name'].values == multiple_high[i])])
 
 print('')
-cks = pd.read_table('../data/Fulton_stars.txt', sep=' ')
+cks = pd.read_table('Fulton_stars.txt', sep=' ') #[SR] changed file location. This is the CKS star data
 subs = [multiple_low_K, multiple_high_K]
 subs_KOI = [multiple_low_KOI, multiple_high_KOI]
 for j,sname in enumerate(subs):
@@ -237,7 +237,7 @@ for j,sname in enumerate(subs):
     str_ntransit_sys = '$'+str(np.size(np.unique(stars['hostnames'][samp][~np.isnan(planets['fpl_radeerr1'][samp])])))+'$'
     str_nrv_sys = '$'+str(np.size(np.unique(stars['hostnames'][samp][~np.isnan(planets['fpl_bmasseerr1'][samp])])))+'$'
     print(str_m+' & '+str_met+' & '+str_age+' & '+str_d+' & '+str_ntotal_sys+' & '+str_ntransit_sys+' & '+str_nrv_sys)
-
+############################The relevant bits are lines 186-216 and 242-254.
 print('')
 subs = [multiple_low_K, multiple_high_K]
 subs_KOI = [multiple_low_KOI, multiple_high_KOI]
