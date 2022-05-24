@@ -2,5 +2,11 @@
 __pycache__/
 __pycache__/
 data/
+<<<<<<< HEAD
 preprocessing/dr3_download.py
 preprocessing/dr2_download.py
+=======
+preprocessing/dr2_download.py
+preprocessing/dr3_download.py
+.gitignore
+>>>>>>> crossmatch
