@@ -74,6 +74,7 @@ low_orig = analysis['Phigh'] < 0.16
 high_orig = analysis['Phigh'] > 0.84
 ambiguous = (analysis['Phigh'] >= 0.16) & (analysis['Phigh'] <= 0.84)
 HJs = analysis['HJflag'] == 'Y'
+# CUTS:
 cuts = (analysis['Pnull'] < 0.05) & (analysis['Nss'] >= 400) & (stars['fst_age'] >= 1.) & (stars['fst_age'] <= 4.5) & (stars['fst_mass'] >= 0.7) & (stars['fst_mass'] <= 2.)
 masses = ~np.isnan(planets['fpl_bmasseerr1'])
 radii = ~np.isnan(planets['fpl_radeerr1'])
